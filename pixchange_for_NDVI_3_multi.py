@@ -15,15 +15,19 @@ start = time()
 From_RGNIR = True
 Equal_area = True
 To_Colourbands = True
-Print_cutoffs = True
+Print_cutoffs = False
+Key_CSV = True
 Band_No = 10
 #Band_No either 5 or 10
+
+CSV_headers = ['File name', 'band 1 min', 'band 1 max', 'band 2 max', 'band 3 max','band 4 max','band 5 max','band 6 max','band 7 max','band 8 max','band 9 max', 'band 10 max']
+CSV_rows = []
 
 if not os.path.isdir("NIRoutput"):
     #os.rmdir("output")
     os.mkdir("NIRoutput")
 
-paths = glob.glob("NIRinput\*.png")
+paths = glob.glob("NIRinput\*.jpg")
 for path in paths:
     newimage2 = Image.open(path)
     #newimage2 = Image.open("Wheat-FW00051corrected.png")
@@ -31,7 +35,6 @@ for path in paths:
     #print(newimage2.size)
     #totalpix = newimage2.width * newimage2.height
     #print(pix[0,0])
-
     #convert RGNIR to RGB:
     if From_RGNIR:
         for x in range(newimage2.width):
@@ -223,13 +226,27 @@ for path in paths:
     #os.mkdir("output2")
 
     filename = os.path.basename(path)
-    savename = "NIRoutput/" + str(filename) + "_output"+ ".png"
+    tag = "_output"
+    if To_Colourbands == True:
+        tag = "_ColBandsOutput"
+    elif From_RGNIR == True:
+        tag = "_NDVI_output"
+
+    savename = "NIRoutput/" + str(filename) + str(tag)+ ".png"
     newimage2.save(savename)
 
     #newimage2.show()
     newimage2.close()
-
+    CSV_rows.append([filename, (b1.min/127.5)-1, (b1.max/127.5)-1, (b2.max/127.5)-1, (b3.max/127.5)-1, (b4.max/127.5)-1, (b5.max/127.5)-1, (b6.max/127.5)-1, (b7.max/127.5)-1, (b8.max/127.5)-1, (b9.max/127.5)-1, (b10.max/127.5)-1])
     print("time:" + str(time() - start))
+
+if Key_CSV == True:
+    import csv
+    filename = 'NIRoutput/NDVI bands.csv'
+    with open(filename, 'w', newline = '') as csvfile:
+        csvwriter = csv.writer(csvfile)
+        csvwriter.writerow(CSV_headers)
+        csvwriter.writerows(CSV_rows)
 
 print("time:" + str(time() - start))
 print(" ")
